@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:transparent;
+    font-family:Arial,sans-serif;
+    touch-action:none;
+}
+
+#game {
+
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    transform:translate(-50%,-50%);
+
+    display:grid;
+
+    grid-template-columns:repeat(8,180px);
+    grid-template-rows:repeat(3,180px);
+
+    column-gap:25px;
+    row-gap:45px;
+
+}
+
+.card{
+
+    position:relative;
+
+    cursor:pointer;
+
+    transform-style:preserve-3d;
+
+    transition:transform .35s;
+
+}
+
+.card.flipped{
+
+    transform:rotateY(180deg);
+
+}
+
+.card.matched{
+
+    pointer-events:none;
+
+    box-shadow:0 0 25px gold;
+
+}
+
+.face {
+    position:absolute;
+    inset:0;
+
+    border-radius:12px;
+
+    background-repeat:no-repeat;
+    background-position:center;
+    background-size:contain;
+
+    backface-visibility:hidden;
+}
+
+.back {
+    background-image:url(images/rect.png);
+    background-repeat:no-repeat;
+    background-position:center;
+    background-size:100%;
+}
+
+.front{
+
+    transform:rotateY(180deg);
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="game"></div>
+
+<script>
+
+const pairs = [
+
+"eye",
+"owl",
+"man",
+"bull",
+"zebra",
+"leg",
+"eye2",
+"thing",
+"elephant",
+"giraffe",
+"bird",
+"man2"
+
+];
+
+let deck=[];
+
+pairs.forEach(name=>{
+
+    deck.push(name);
+    deck.push(name);
+
+});
+
+deck.sort(()=>Math.random()-0.5);
+
+const game=document.getElementById("game");
+
+let first=null;
+let second=null;
+let lock=false;
+let matches=0;
+
+deck.forEach(name=>{
+
+    const card=document.createElement("div");
+    card.className="card";
+
+    card.dataset.id=name;
+
+    card.innerHTML=`
+
+        <div class="face back"></div>
+
+        <div class="face front"
+             style="background-image:url(images/${name}.png)">
+        </div>
+
+    `;
+
+    card.onclick=()=>flip(card);
+
+    game.appendChild(card);
+
+});
+
+function flip(card){
+
+    if(lock) return;
+
+    if(card===first) return;
+
+    if(card.classList.contains("matched")) return;
+
+    card.classList.add("flipped");
+
+    if(!first){
+
+        first=card;
+        return;
+
+    }
+
+    second=card;
+
+    lock=true;
+
+    if(first.dataset.id===second.dataset.id){
+
+        first.classList.add("matched");
+        second.classList.add("matched");
+
+        first=null;
+        second=null;
+
+        lock=false;
+
+        matches++;
+
+        if(matches===12){
+
+            window.history.replaceState(
+                {},
+                "",
+                "?complete="+Date.now()
+            );
+
+        }
+
+    }
+
+    else{
+
+        setTimeout(()=>{
+
+            first.classList.remove("flipped");
+            second.classList.remove("flipped");
+
+            first=null;
+            second=null;
+
+            lock=false;
+
+        },1000);
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
